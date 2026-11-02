@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>ТРИНЬКА UA</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080e19;color:white;font-family:Arial,sans-serif}
+header{padding:22px;text-align:center;background:#101b2b;border-bottom:1px solid #26374e}
+h1{margin:0;color:#f4c542;font-size:30px}
+.balance{margin:20px;padding:20px;background:#17283c;border-radius:16px;text-align:center;font-size:23px}
+button{border:0;border-radius:12px;padding:16px;color:white;background:#176b50;font-size:17px;font-weight:bold;width:100%;margin:7px 0}
+button.secondary{background:#24364d}
+.container{padding:16px}
+.card{background:#17283c;padding:18px;margin:12px 0;border-radius:14px}
+.room{display:flex;justify-content:space-between;align-items:center}
+.gold{color:#f4c542}
+#game{display:none}
+.cards{display:flex;justify-content:center;gap:12px;margin:30px 0}
+.playcard{background:white;color:#111;border-radius:12px;width:85px;height:120px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold}
+.red{color:#dc2525}
+</style>
+</head>
+<body>
+<header>
+<h1>♠ ТРИНЬКА UA ♠</h1>
+<div>Українська карткова гра</div>
+</header>
+
+<div class="container" id="menu">
+<div class="balance">Баланс: <span class="gold">0 ₴</span></div>
+
+<div class="card">
+<h2>🎮 Грати</h2>
+<button onclick="findGame()">ШВИДКА ГРА</button>
+<button class="secondary" onclick="showRooms()">СПИСОК СТОЛІВ</button>
+<button class="secondary" onclick="createRoom()">СТВОРИТИ СТІЛ</button>
+</div>
+
+<div class="card">
+<h3>♠ Правила гри</h3>
+<p>6 гравців за столом</p>
+<p>24 карти в колоді</p>
+<p>По 3 карти кожному</p>
+<p>Козир — 7 піки ♠</p>
+</div>
+
+<div class="card" id="rooms">
+<h3>Вільні столи</h3>
+<p>Поки немає відкритих столів.</p>
+</div>
+</div>
+
+<div class="container" id="game">
+<div class="card">
+<h2 id="tableTitle">Ігровий стіл</h2>
+<p id="players">Гравці: 1/6</p>
+<p>Козир: <span class="gold">7♠</span></p>
+</div>
+<h3 style="text-align:center">Твої карти</h3>
+<div class="cards" id="cards"></div>
+<button onclick="alert('Очікуємо підключення інших гравців')">ЗРОБИТИ ХІД</button>
+<button class="secondary" onclick="back()">ВИЙТИ ЗІ СТОЛУ</button>
+</div>
+
+<script>
+const tg=window.Telegram?.WebApp;
+tg?.ready();
+tg?.expand();
+
+let tables=[];
+
+function findGame(){
+let room=tables.find(x=>x.players<6);
+if(!room){createRoom();return}
+room.players++;
+enter(room);
+}
+
+function createRoom(){
+let room={id:tables.length+1,players:1};
+tables.push(room);
+enter(room);
+}
+
+function enter(room){
+document.getElementById('menu').style.display='none';
+document.getElementById('game').style.display='block';
+document.getElementById('tableTitle').textContent='Стіл №'+room.id;
+document.getElementById('players').textContent='Гравці: '+room.players+'/6';
+deal();
+}
+
+function showRooms(){
+let box=document.getElementById('rooms');
+box.innerHTML='<h3>Вільні столи</h3>';
+if(!tables.length)box.innerHTML+='<p>Вільних столів поки немає.</p>';
+tables.forEach(r=>{
+box.innerHTML+=`<button onclick="findGame()">Стіл №${r.id} — ${r.players}/6</button>`;
+});
+}
+
+function deal(){
+let ranks=['6','7','8','9','10','J','Q','K','A'];
+let suits=['♠','♥','♦','♣'];
+let deck=[];
+suits.forEach(s=>['6','7','8','9','10','J'].forEach(r=>deck.push(r+s)));
+deck.sort(()=>Math.random()-.5);
+let hand=deck.slice(0,3);
+document.getElementById('cards').innerHTML=hand.map(c=>
+`<div class="playcard ${c.includes('♥')||c.includes('♦')?'red':''}">${c}</div>`
+).join('');
+}
+
+function back(){
+document.getElementById('game').style.display='none';
+document.getElementById('menu').style.display='block';
+}
+</script>
+</body>
+</html>
